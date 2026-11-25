@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Digital ID Card - Build &amp; Usage Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;800&family=Caveat:wght@600&family=Instrument+Serif&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0E1116; --linen: #F4EFE6; --pulse: #1F3FAE; --red: #E8452C;
+    --yellow: #F7D23E; --lime: #C9F04D; --leaf: #2F9E62; --lilac: #CDBDF6;
+    --slate: #4E5B85;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Anek Latin", Arial, sans-serif; color: var(--ink);
+    background: var(--linen); font-size: 10.5pt; line-height: 1.45;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 296.5mm; padding: 16mm 16mm 20mm; position: relative;
+    background: var(--linen); page-break-after: always; break-after: page; overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+
+  .label { font-family: "Martian Mono", monospace; font-size: 7.5pt; letter-spacing: .08em; text-transform: uppercase; color: var(--slate); }
+  h1, h2 { margin: 0; font-weight: 800; line-height: 1.05; }
+  h1 { font-size: 40pt; }
+  h2 { font-size: 24pt; margin: 3mm 0 5mm; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; font-weight: 800; color: var(--pulse); }
+  .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-style: italic; }
+  .note { font-family: "Caveat", cursive; font-size: 15pt; color: var(--pulse); font-weight: 600; }
+  p { margin: 0 0 3mm; }
+  a { color: var(--pulse); text-decoration: none; border-bottom: 1.5px solid var(--pulse); }
+  code, .mono { font-family: "Martian Mono", monospace; font-size: 8.3pt; }
+  code { background: #fff; border: 1.5px solid var(--ink); border-radius: 3px; padding: 0 3px; }
+
+  /* Marker swipe highlight */
+  .marker { background: var(--yellow); padding: 0 .18em; display: inline-block; transform: skewX(-6deg); }
+  .marker > span { display: inline-block; transform: skewX(6deg); }
+
+  /* Pills */
+  .pill { display: inline-block; border: 3px solid var(--ink); border-radius: 99px; padding: 0 10px; font-weight: 800; font-size: 9pt; margin-right: 2mm; }
+  .pill.y { background: var(--yellow); } .pill.g { background: var(--leaf); color: #fff; }
+  .pill.l { background: var(--lime); } .pill.p { background: var(--lilac); }
+
+  /* Retro OS window */
+  .win { border: 3px solid var(--ink); border-radius: 6px; background: #fff; box-shadow: 4px 4px 0 var(--ink); margin: 0 0 6mm; }
+  .win .bar { background: var(--pulse); color: #fff; display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-bottom: 3px solid var(--ink); }
+  .win .bar .dot { width: 9px; height: 9px; border: 2px solid var(--ink); background: var(--lime); border-radius: 50%; }
+  .win .bar .t { font-family: "Martian Mono", monospace; font-size: 7.5pt; margin-left: 4px; }
+  .win .body { padding: 4mm 5mm; }
+  .win pre { margin: 0; font-family: "Martian Mono", monospace; font-size: 7.8pt; line-height: 1.55; white-space: pre-wrap; }
+
+  /* Torn paper card */
+  .card { background: var(--leaf); padding: 4mm; border: 3px solid var(--ink); border-radius: 4px; transform: rotate(-.6deg); }
+  .card > div { background: #fff; border: 2px solid var(--ink); padding: 2mm; }
+  .card svg { width: 100%; height: auto; display: block; }
+
+  /* Stamp */
+  .stamp { border: 4px double var(--red); color: var(--red); padding: 3mm 5mm; border-radius: 4px; transform: rotate(-1.5deg); background: #fff; margin: 0 0 6mm; }
+  .stamp > b { font-size: 13pt; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 1mm; }
+  .stamp ul { margin: 0; padding-left: 5mm; color: var(--ink); }
+
+  /* Starburst */
+  .burst { position: absolute; width: 36mm; height: 36mm; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11pt; line-height: 1.1; }
+  .burst svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .burst span { position: relative; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; background: #fff; border: 3px solid var(--ink); margin: 0 0 5mm; font-size: 9.5pt; }
+  th { background: var(--ink); color: var(--linen); text-align: left; font-family: "Martian Mono", monospace; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .06em; padding: 2mm 3mm; }
+  td { padding: 1.7mm 3mm; border-top: 1.5px solid var(--ink); vertical-align: top; }
+  tr:nth-child(even) td { background: #faf7f1; }
+
+  /* Dimension callout */
+  .dim { display: flex; align-items: center; gap: 3mm; margin: 4mm 0; }
+  .dim i { flex: 1; height: 0; border-top: 2px solid var(--ink); position: relative; }
+  .dim i::before, .dim i::after { content: ""; position: absolute; top: -6px; height: 12px; border-left: 2px solid var(--ink); }
+  .dim i::before { left: 0; } .dim i::after { right: 0; }
+
+  .step { display: flex; gap: 4mm; margin-bottom: 3.5mm; }
+  .step .n { flex: none; width: 8mm; height: 8mm; border-radius: 50%; border: 3px solid var(--ink); background: var(--lime); font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .step > div { flex: 1; }
+
+  .footer { position: absolute; left: 16mm; right: 16mm; bottom: 9mm; display: flex; justify-content: space-between; border-top: 2px solid var(--ink); padding-top: 2mm; }
+  .cols { display: flex; gap: 6mm; } .cols > * { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ================= 1. COVER ================= -->
+<section class="page">
+  <div class="label">Open-source hardware project &middot; ESP32-C3</div>
+  <h1 style="margin-top:14mm">Digital<br><span class="marker"><span>ID Card</span></span></h1>
+  <p class="serif" style="font-size:20pt;margin-top:6mm;max-width:130mm">A pocket-sized, battery-powered card with a color TFT and a scrolling OLED. Build &amp; usage guide.</p>
+
+  <div class="burst" style="right:18mm;top:26mm">
+    <svg viewBox="0 0 100 100"><polygon fill="#C9F04D" stroke="#0E1116" stroke-width="3" points="50,2 58,17 74,8 76,26 94,25 88,42 100,50 88,58 94,75 76,74 74,92 58,83 50,98 42,83 26,92 24,74 6,75 12,58 0,50 12,42 6,25 24,26 26,8 42,17"/></svg>
+    <span>step by<br>step<br>guide</span>
+  </div>
+
+  <div style="margin-top:14mm">
+    <span class="pill y">ST7789 TFT</span><span class="pill g">SSD1306 OLED</span><span class="pill p">Li-Po + USB-C</span><span class="pill l">Arduino</span>
+  </div>
+
+  <div class="win" style="margin-top:12mm">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">what-you-get.txt</span></div>
+    <div class="body"><pre>&bull; 240 x 280 TFT plays your GIF, then shows still photos
+&bull; 128 x 64 OLED scrolls your name, role or handle
+&bull; Two buttons: NEXT / PREVIOUS screen
+&bull; Rechargeable over USB-C, ON/OFF switch
+&bull; 9 signal wires in total (7 displays + 2 buttons)</pre></div>
+  </div>
+
+  <div class="stamp" style="transform:rotate(1deg)">
+    <b>Source code &amp; latest version</b>
+    <a href="https://github.com/AmshenShanu07/Digital-Id-Card-Firmware" style="color:var(--pulse)">github.com/AmshenShanu07/Digital-Id-Card-Firmware</a>
+  </div>
+
+  <div class="note" style="margin-top:6mm">Contents: 1 Parts &middot; 2 Wiring &middot; 3 Power &middot; 4 Software &middot; 5 Your images &middot; 6 Customise &amp; fix</div>
+
+  <div class="footer"><span class="label">Digital ID Card guide</span><span class="label">1</span></div>
+</section>
+
+<!-- ================= 2. PARTS ================= -->
+<section class="page">
+  <div class="label">Step 1</div>
+  <h2>Parts <span class="marker"><span>list</span></span></h2>
+  <table>
+    <tr><th>Part</th><th>Spec</th><th>Buy</th></tr>
+    <tr><td><b>Microcontroller</b></td><td>ESP32-C3 SuperMini, headers soldered</td><td><a href="https://robu.in/product/esp32-c3-development-board-with-soldering/">Robu.in</a></td></tr>
+    <tr><td><b>Main display</b></td><td>SmartElex 1.69" ST7789 TFT, 240 x 280, SPI</td><td><a href="https://robu.in/product/smartelex-1-69-inch-tft-lcd-display/">Robu.in</a></td></tr>
+    <tr><td><b>Side display</b></td><td>0.96" SSD1306 OLED, 128 x 64, I2C</td><td><a href="https://robu.in/product/0-96-inch-yellow-yellow-blue-oled-lcd-led-display-module/">Robu.in</a></td></tr>
+    <tr><td><b>Battery</b></td><td>3.7 V 1800 mAh Li-Po</td><td><a href="https://amzn.in/d/060XRVto">Amazon</a></td></tr>
+    <tr><td><b>Charger</b></td><td>TP4056 USB-C module with protection</td><td><a href="https://robocraze.com/products/tp4056-battery-charger-c-type-module-with-protection-1">Robocraze</a></td></tr>
+    <tr><td><b>Power switch</b></td><td>SPST ON/OFF</td><td>any</td></tr>
+    <tr><td><b>Buttons</b></td><td>2 x tactile push buttons</td><td>any</td></tr>
+    <tr><td><b>Tools</b></td><td>Hook-up wire, soldering iron</td><td></td></tr>
+  </table>
+  <p class="note">Any equivalent part with the same chip and pinout works.</p>
+
+  <h3>What you also need</h3>
+  <div class="cols">
+    <div class="win"><div class="bar"><span class="dot"></span><span class="t">hardware</span></div><div class="body">A USB-C data cable (not charge-only) to program the board.</div></div>
+    <div class="win"><div class="bar"><span class="dot"></span><span class="t">software</span></div><div class="body">Arduino IDE, and Python 3.8+ for the image converters.</div></div>
+  </div>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">2</span></div>
+</section>
+
+<!-- ================= 3. WIRING ================= -->
+<section class="page">
+  <div class="label">Step 2</div>
+  <h2><span class="marker"><span>Wiring</span></span> diagram</h2>
+  <div class="card"><div><!--DIAGRAM--></div></div>
+  <div class="dim"><span class="label">3V3 and GND shared</span><i></i><span class="label">9 signal wires</span></div>
+
+  <div class="cols">
+    <div>
+      <h3>TFT (ST7789, SPI)</h3>
+      <table><tr><th>TFT</th><th>ESP32-C3</th></tr>
+        <tr><td>VCC</td><td>3V3</td></tr><tr><td>GND</td><td>GND</td></tr>
+        <tr><td>SCL / CLK</td><td>GPIO 6</td></tr><tr><td>SDA / MOSI</td><td>GPIO 5</td></tr>
+        <tr><td>CS</td><td>GPIO 7</td></tr><tr><td>DC</td><td>GPIO 10</td></tr><tr><td>RST</td><td>GPIO 4</td></tr></table>
+    </div>
+    <div>
+      <h3>OLED (SSD1306, I2C)</h3>
+      <table><tr><th>OLED</th><th>ESP32-C3</th></tr>
+        <tr><td>VCC</td><td>3V3</td></tr><tr><td>GND</td><td>GND</td></tr>
+        <tr><td>SDA</td><td>GPIO 0</td></tr><tr><td>SCL</td><td>GPIO 1</td></tr></table>
+      <h3>Buttons</h3>
+      <table><tr><th>Button</th><th>Pins</th></tr>
+        <tr><td>NEXT</td><td>GPIO 3 &harr; GND</td></tr><tr><td>PREVIOUS</td><td>GPIO 20 &harr; GND</td></tr></table>
+    </div>
+  </div>
+  <p class="note">If the TFT has a BL pin, tie it to 3V3. Buttons need no resistor: the internal pull-up is used.</p>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">3</span></div>
+</section>
+
+<!-- ================= 4. POWER ================= -->
+<section class="page">
+  <div class="label">Step 3</div>
+  <h2>Battery, charger &amp; <span class="marker"><span>switch</span></span></h2>
+  <table>
+    <tr><th>From</th><th>To</th></tr>
+    <tr><td>Battery red (+)</td><td>TP4056 <b>B+</b></td></tr>
+    <tr><td>Battery black (-)</td><td>TP4056 <b>B-</b></td></tr>
+    <tr><td>TP4056 <b>OUT+</b></td><td>One side of the power switch</td></tr>
+    <tr><td>Other side of the switch</td><td>ESP32-C3 <b>5V</b> pin</td></tr>
+    <tr><td>TP4056 <b>OUT-</b></td><td>ESP32-C3 <b>GND</b></td></tr>
+  </table>
+  <p>Charge through the TP4056 USB-C port. The switch cuts power to the whole card.</p>
+
+  <div class="stamp">
+    <b>Read before you power it on</b>
+    <ul>
+      <li>A charged Li-Po is about 4.2 V. <b>Never connect it to the 3V3 pin.</b> Use the <b>5V</b> pin, which feeds the onboard 3.3 V regulator.</li>
+      <li>Check polarity twice. A reversed battery or charger output can destroy parts.</li>
+      <li>Battery goes on <b>B+ / B-</b>. The load (switch + ESP32) goes on <b>OUT+ / OUT-</b>.</li>
+      <li>Use a protected battery or a TP4056 module with protection.</li>
+      <li>Do not short a Li-Po or leave it charging unattended.</li>
+    </ul>
+  </div>
+
+  <h3>Full pin reference</h3>
+  <table>
+    <tr><th>ESP32-C3 pin</th><th>Connected to</th></tr>
+    <tr><td>5V</td><td>Power switch (from TP4056 OUT+)</td></tr>
+    <tr><td>3V3</td><td>TFT VCC, OLED VCC</td></tr>
+    <tr><td>GND</td><td>TFT, OLED, both buttons, TP4056 OUT-</td></tr>
+    <tr><td>GPIO 0 / 1</td><td>OLED SDA / SCL</td></tr>
+    <tr><td>GPIO 3 / 20</td><td>NEXT / PREVIOUS button</td></tr>
+    <tr><td>GPIO 4 / 5 / 6</td><td>TFT RST / MOSI / SCLK</td></tr>
+    <tr><td>GPIO 7 / 10</td><td>TFT CS / DC</td></tr>
+  </table>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">4</span></div>
+</section>
+
+<!-- ================= 5. SOFTWARE ================= -->
+<section class="page">
+  <div class="label">Step 4</div>
+  <h2>Software <span class="marker"><span>setup</span></span></h2>
+
+  <div class="step"><div class="n">1</div><div><b>Install the Arduino IDE</b> from arduino.cc/en/software.</div></div>
+  <div class="step"><div class="n">2</div><div><b>Add ESP32 support.</b> In File &gt; Preferences, add this to <i>Additional boards manager URLs</i>, then install <b>esp32 by Espressif Systems</b> in the Boards Manager.
+    <div class="win" style="margin:2mm 0 0"><div class="body" style="padding:2mm 3mm"><pre>https://espressif.github.io/arduino-esp32/package_esp32_index.json</pre></div></div></div></div>
+  <div class="step"><div class="n">3</div><div><b>Install libraries</b> (Library Manager):<br>
+    <span class="pill y">Adafruit GFX</span><span class="pill y">Adafruit ST7735 and ST7789</span><span class="pill y">Adafruit SSD1306</span><span class="pill y">JPEGDEC</span></div></div>
+  <div class="step"><div class="n">4</div><div><b>Get the code:</b>
+    <div class="win" style="margin:2mm 0 0"><div class="body" style="padding:2mm 3mm"><pre>git clone https://github.com/AmshenShanu07/Digital-Id-Card-Firmware.git</pre></div></div></div></div>
+  <div class="step"><div class="n">5</div><div><b>Open</b> <code>firmware/DigitalIdCard/DigitalIdCard.ino</code>.</div></div>
+  <div class="step"><div class="n">6</div><div><b>Select the board</b> Tools &gt; Board &gt; esp32 &gt; <b>ESP32C3 Dev Module</b>, then set:
+    <table style="margin-top:2mm"><tr><th>Option</th><th>Value</th></tr>
+      <tr><td>USB CDC On Boot</td><td>Enabled (for Serial Monitor)</td></tr>
+      <tr><td>Partition Scheme</td><td>Huge APP (3MB No OTA / 1MB SPIFFS)</td></tr>
+      <tr><td>Flash Size</td><td>4MB</td></tr></table></div></div>
+  <div class="step"><div class="n">7</div><div><b>Upload.</b> Pick the port and click Upload. If the board is not detected, hold <b>BOOT</b> while plugging in USB.</div></div>
+
+  <p class="note">The sketch ships with sample content (12-frame animation + 2 gradient images), so it runs straight away.</p>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">5</span></div>
+</section>
+
+<!-- ================= 6. OWN IMAGES ================= -->
+<section class="page">
+  <div class="label">Step 5</div>
+  <h2>Use <span class="marker"><span>your own</span></span> GIF &amp; photos</h2>
+  <p>The ESP32 can't read PNG or GIF files, so two Python scripts in <code>tools/</code> turn them into C headers compiled into the firmware.</p>
+
+  <div class="win"><div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">terminal</span></div><div class="body"><pre># 1. install once (Python 3.8+)
+pip install -r tools/requirements.txt
+
+# 2. animation screen (GIF)
+python tools/gif_to_header.py my_animation.gif firmware/DigitalIdCard/animation.h
+
+# 3. still images
+python tools/image_to_header.py photo1.png firmware/DigitalIdCard/image_one.h --name imageOne
+python tools/image_to_header.py photo2.png firmware/DigitalIdCard/image_two.h --name imageTwo</pre></div></div>
+
+  <table>
+    <tr><th>GIF option</th><th>Default</th><th>What it does</th></tr>
+    <tr><td><code>--quality</code></td><td>75</td><td>JPEG quality 1-95. Lower = smaller file.</td></tr>
+    <tr><td><code>--slowdown</code></td><td>1.0</td><td>Time multiplier. 2.0 plays twice as slow.</td></tr>
+  </table>
+  <p>Every image/frame is scaled and center-cropped to <b>240 x 280</b>. After converting, upload the sketch again.</p>
+
+  <div class="stamp" style="transform:rotate(.8deg)">
+    <b>Sketch too big?</b>
+    The whole animation must fit in about 3 MB of flash. Use fewer frames, a smaller GIF, or a lower <code>--quality</code>.
+  </div>
+
+  <h3>Add a third image</h3>
+  <div class="step"><div class="n">1</div><div>Convert it with <code>--name imageThree</code> to <code>image_three.h</code>.</div></div>
+  <div class="step"><div class="n">2</div><div>In the sketch add <code>#include "image_three.h"</code> and append <code>imageThreeData</code> to <code>images[]</code>.</div></div>
+  <div class="step"><div class="n">3</div><div>Add one matching line to <code>scrollingTexts[]</code> and <code>mainTexts[]</code>.</div></div>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">6</span></div>
+</section>
+
+<!-- ================= 7. CUSTOMISE + TROUBLE ================= -->
+<section class="page">
+  <div class="label">Step 6</div>
+  <h2>Customise &amp; <span class="marker"><span>fix it</span></span></h2>
+
+  <div class="win"><div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">DigitalIdCard.ino - USER SETTINGS</span></div><div class="body"><pre>const char *const scrollingTexts[] = {
+  "@your.handle \x07 Your Role \x07 Maker",
+  "@your.handle \x07 Your Name \x07 Maker",
+  "@your.handle \x07 Your Role \x07 Your Name"
+};
+const char *const mainTexts[] = { "Name", "Role", "Maker" };
+#define SCROLL_INTERVAL 25   // ms per pixel, lower = faster</pre></div></div>
+  <p><code>\x07</code> prints a bullet in the OLED font. Keep <code>mainTexts</code> to about 7 characters. <b>NEXT / PREVIOUS</b> cycle animation &rarr; image 1 &rarr; image 2.</p>
+
+  <h3>Troubleshooting</h3>
+  <table>
+    <tr><th>Problem</th><th>Fix</th></tr>
+    <tr><td>TFT stays black</td><td>Re-check the 5 SPI wires and VCC/GND. Tie BL to 3V3 if present.</td></tr>
+    <tr><td>Wrong colors / shifted picture</td><td>Must be a 240 x 280 ST7789 (<code>tft.init(240, 280)</code>).</td></tr>
+    <tr><td>"OLED not found!"</td><td>Check GPIO 0/1. Some modules use 0x3D: change <code>OLED_ADDRESS</code>.</td></tr>
+    <tr><td>No Serial Monitor output</td><td>USB CDC On Boot = Enabled, baud 115200.</td></tr>
+    <tr><td>"Sketch too big"</td><td>Huge APP partition, then shrink the GIF.</td></tr>
+    <tr><td>Animation too fast / slow</td><td>Use <code>--slowdown</code>.</td></tr>
+    <tr><td>Button dead or double-steps</td><td>Must connect GPIO to GND. Tune <code>DEBOUNCE_MS</code>.</td></tr>
+    <tr><td>No power from battery</td><td>Check B+/B- polarity, the switch, and OUT+ &rarr; switch &rarr; <b>5V</b>.</td></tr>
+    <tr><td>Upload fails</td><td>Hold BOOT while plugging in, try another (data) cable.</td></tr>
+  </table>
+
+  <div class="stamp" style="transform:rotate(-1deg);text-align:center">
+    <b>Questions &middot; issues &middot; updates</b>
+    <a href="https://github.com/AmshenShanu07/Digital-Id-Card-Firmware" style="color:var(--pulse)">github.com/AmshenShanu07/Digital-Id-Card-Firmware</a>
+  </div>
+  <div class="footer"><span class="label">github.com/AmshenShanu07/Digital-Id-Card-Firmware</span><span class="label">7</span></div>
+</section>
+
+</body>
+</html>
