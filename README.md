@@ -261,4 +261,4 @@ const char *const mainTexts[] = { "Name", "Role", "Maker" };
 
 ## License
 
-Add a license of your choice (for example MIT) before publishing, so others know how they may reuse your work.
+Released under the [MIT License](LICENSE).
